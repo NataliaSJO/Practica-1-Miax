@@ -2,10 +2,7 @@ import argparse
 import requests
 import datetime
 
-import useApi
-
-import Extractor
-
+import extractor
 fecha_fin = datetime.datetime.now()
 
 year_ago = 15
