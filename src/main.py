@@ -1,3 +1,7 @@
+
+import os
+from dotenv import load_dotenv
+
 import argparse
 import requests
 import datetime
@@ -104,7 +108,7 @@ def main():
 
 
    
-    api_key_marketstack = '64a04382076456cb303d41069878f9cd'
+    api_key_marketstack = os.getenv("MARKETSTACK_KEY")
     
     my_extractor = extractor.Extractor(marketstack_key= api_key_marketstack)
 
