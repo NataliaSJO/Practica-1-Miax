@@ -87,9 +87,10 @@ def call_api_alpha(symbol, interval, range):
 
 
 def main():
+
     parser = argparse.ArgumentParser(description="Consulta los datos historicos de una accion o un indece desde la terminal")
     
-    parser.add_argument("--source", nargs='+', type=str, default=["alpha_vantage"], help="Fuente de datos disponibles (ej: alpha_vantage, yahoo_finance, finnhub)")
+    parser.add_argument("--source", nargs='+', type=str, default=["yaho_finance"], help="Fuente de datos disponibles (ej: yahoo_finance, marketstack)")
     
     parser.add_argument("--symbol", nargs='+', type=str, default=["^IBEX"], help="Símbolo del activo (ej. AAPL, SAN.MC)")
     parser.add_argument("--interval", type=str, default="1d", help="Intervalo de datos (ej. 1d, 1wk)")
@@ -103,10 +104,9 @@ def main():
 
 
    
-    api_key_alpha = 'LMD40040TKC5WMWM'
-    api_key_finnhub = 'XXXXXXXX'
+    api_key_marketstack = '64a04382076456cb303d41069878f9cd'
     
-    my_extractor = Extractor.Extractor(alpha_vantage_key=api_key_alpha, finnhub_key=api_key_finnhub)
+    my_extractor = extractor.Extractor(marketstack_key= api_key_marketstack)
 
     print(datetime.datetime.now())
     print(args.source)
@@ -133,6 +133,9 @@ def main():
 if __name__ == "__main__":
     main()
    
+
+
+
 
 
     #

@@ -1,4 +1,4 @@
-from Dt_Clases import DailyPrice 
+from data_classes import DailyPrice 
 import datetime
 
 class Utils:

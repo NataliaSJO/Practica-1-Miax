@@ -5,12 +5,11 @@ from typing import List, Dict, Any
 
 
 
-from Dt_Clases import DailyPrice
+from data_classes import DailyPrice
  
 class Extractor:
-    def __init__(self, alpha_vantage_key, finnhub_key):
-        self.alpha_key = alpha_vantage_key
-        self.finnhub_key = finnhub_key
+    def __init__(self, marketstack_key):
+        self.marketstack_key = marketstack_key
         self.data_series = []
 
     def _standard_data(self, data, source):
@@ -26,6 +25,7 @@ class Extractor:
                 "high": float(entry["high"]),
                 "low": float(entry["low"]),
                 "close": float(entry["close"]),
+                "adj_close": float(entry["adj_close"]),
                 "volume": int(entry["volume"]),
                 "source": source
             })
@@ -38,98 +38,68 @@ class Extractor:
             fecha = datetime.strptime(data["date"], "%Y-%m-%d").date()
             list_price.append(
                 DailyPrice(
-                    date=fecha,
-                    open=float(data["open"]),
-                    high=float(data["high"]),
-                    low=float(data["low"]),
-                    close=float(data["close"]),
-                    volume=int(data["volume"])
+                    date= fecha,
+                    open= float(data["open"]),
+                    high= float(data["high"]),
+                    low= float(data["low"]),
+                    close= float(data["close"]),
+                    adj_close= float(data["adj_close"]),
+                    volume= int(data["volume"])
                 )
             )
         print(list_price)
         return sorted(list_price, key=lambda p: p.date)
     
-    def get_alpha_vantage(self, symbol, range):
-        """Funcion que llama a la api de Alpha Vantage, capturando el error HTTPS en caso de ocurrir.
-        Arguments:
-            
-        Sus parametros son: function(), symbol (introducido por terminal), apikey, 
-        outputsize(full indica que solicita todos los datos históricos)"""
-
-        url = f"https://www.alphavantage.co/query"
-        params = {
-            "function": "TIME_SERIES_DAILY",
-            "symbol": symbol,
-            "apikey": self.alpha_key,
-            "outputsize": "compact" #PONER 'full' y filtrar por fechas usando el range
-        }
-        try:
-            print("REQUEST ALPHA")
-            response = requests.get(url, params=params).json()
-        except requests.exceptions.RequestException as e:
-            print("Error", e)
-        time_series = response.get("Time Series (Daily)", {})
-        
-      #  init_date = today - range
-      #  today = datetime.today()
-      #  datos_filtrados = {
-      #      fecha: valores
-       #     for fecha, valores in time_series.items()
-        #    if init_date <= fecha <= today
-        #}
- 
-        data = [{
-            "date": date,
-            "open": prices["1. open"],
-            "high": prices["2. high"],
-            "low": prices["3. low"],
-            "close": prices["4. close"],
-            "volume": prices["5. volume"]
-        } for date, prices in time_series.items()]
-        print("ESTOY AQUI")
-      #  print(self._standard_data(data, "alpha_vantage"))
-
-        print(self._convert(self._standard_data(data, "alpha_vantage")))
-
-        return(self._convert(self._standard_data(data, "alpha_vantage")))
-       # return self._standard_data(data, "alpha_vantage")
 
     def get_yahoo_finance(self, symbol, range):
-        ticker = yf.Ticker(symbol)
-        historic = ticker.history(period=range)
-        data = [{
+        data = yf.download(symbol, start = '2000-01-01', end = datetime.now().strftime('%Y-%m-%d'), group_by='column', auto_adjust=False, progress=False)
+    
+        print(data.columns)
+        prices = [{
             "date": str(date.date()), #la fecha tiene que tener formatio YYYY-MM-dd
-            "open": prices["Open"],
-            "high": prices["High"],
-            "low": prices["Low"],
-            "close": prices["Close"],
-            "volume": prices["Volume"]
-        } for date, prices in historic.iterrows()]
-        return self._standard_data(data, "yahoo_finance")
+            "open": entry["Open"],
+            "high": entry["High"],
+            "low": entry["Low"],
+            "close": entry["Close"],
+            "adj_close": entry.get("Adj Close", entry["Close"]),
+            "volume": entry["Volume"]
+        } for date, entry in data.iterrows()]
+        # return self._standard_data(data, "yahoo_finance")
 
-    def get_finnhub(self, symbol):
-        now = int(datetime.now().timestamp())
-        past = now - 30 * 86400
-        url = f"https://finnhub.io/api/v1/stock/candle"
+        print(self._convert(self._standard_data(prices, "yahoo_finance")))
+
+        return(self._convert(self._standard_data(prices, "yahoo_finance")))
+    
+    def get_marketstack_prices(self, symbol: str, limit: int = 100):
+
+        url = f"http://api.marketstack.com/v1/eod"
         params = {
-            "symbol": symbol,
-            "resolution": "D",
-            "from": past,
-            "to": now,
-            "token": self.finnhub_key
+            "access_key": self.marketstack_key,
+            "symbols": 'AAPL',
+            "limit": limit  # número de días
         }
-        response = requests.get(url, params=params).json()
-        if response.get("s") != "ok":
-            return "Error en la prespuesta"
-        data = [{
-            "date": datetime.utcfromtimestamp(t).strftime('%Y-%m-%d'),
-            "open": o,
-            "high": h,
-            "low": l,
-            "close": c,
-            "volume": v
-        } for t, o, h, l, c, v in zip(response["t"], response["o"], response["h"], response["l"], response["c"], response["v"])]
-        return self._standard_data(data, "finnhub")
+
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        if "data" not in data:
+            print("Error o respuesta vacía:", data)
+            return []
+
+        prices = [{
+            "date": entry["date"][:10],  # YYYY-MM-DD
+            "open": entry["open"],
+            "high": entry["high"],
+            "low": entry["low"],
+            "close": entry["close"],
+            "adj_close": entry.get("adj_close", entry["close"]), 
+            "volume": entry["volume"]
+        } for entry in data["data"]]
+
+        print(self._convert(self._standard_data(prices, "marketstack")))    
+               
+        return(self._convert(self._standard_data(prices, "marketstack")))
+     
 
     def get_multiple_outputs(self, symbols, source, range):
 
@@ -139,11 +109,9 @@ class Extractor:
         """Obtiene múltiples series de datos simultáneamente."""
         results = {}
         for symbol, source in zip(symbols, source):
-            if source == "alpha_vantage":
-                results[symbol] = self.get_alpha_vantage(symbol, range)
+            if source == "marketstack":
+                results[symbol] = self.get_marketstack_prices(symbol, range)
             elif source == "yahoo_finance":
                 results[symbol] = self.get_yahoo_finance(symbol, range)
-            elif source == "finnhub":
-                results[symbol] = self.get_finnhub(symbol)
         return results
     

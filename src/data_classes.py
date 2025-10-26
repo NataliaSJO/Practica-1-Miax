@@ -13,6 +13,7 @@ class DailyPrice:
     high: float
     low: float
     close: float
+    adj_close: float
     volume: int
 
     def to_dict(self) -> dict:
