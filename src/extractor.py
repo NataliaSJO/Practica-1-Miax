@@ -1,9 +1,14 @@
+import json
 import requests
 import yfinance as yf
 from datetime import datetime
 from typing import List, Dict, Any
 
+import os
 
+from utils_data import standard_data, convert_to_dailyprice
+
+from utils_file import save_output
 
 from data_classes import DailyPrice
  
@@ -12,49 +17,10 @@ class Extractor:
         self.marketstack_key = marketstack_key
         self.data_series = []
 
-    def _standard_data(self, data, source):
-        """Se formatean los datos en el tipo que más interesa, float o int.
-            entry es un diccionario con las keys: date, open, high, low, close, volume, source.
-            Siendo todos datos de la api, y source el identificador del api.
-            Devulve los datos estandarizados como una lista de diccionarios."""
-        standard_data = []
-        for entry in data:
-            standard_data.append({
-                "date": entry["date"],
-                "open": float(entry["open"]),
-                "high": float(entry["high"]),
-                "low": float(entry["low"]),
-                "close": float(entry["close"]),
-                "adj_close": float(entry["adj_close"]),
-                "volume": int(entry["volume"]),
-                "source": source
-            })
-        return standard_data
-   
-    def _convert(self, time_series:List[Dict[str, Any]]) -> List[DailyPrice]:
-        print(time_series)
-        list_price = []
-        for data in time_series:
-            fecha = datetime.strptime(data["date"], "%Y-%m-%d").date()
-            list_price.append(
-                DailyPrice(
-                    date= fecha,
-                    open= float(data["open"]),
-                    high= float(data["high"]),
-                    low= float(data["low"]),
-                    close= float(data["close"]),
-                    adj_close= float(data["adj_close"]),
-                    volume= int(data["volume"])
-                )
-            )
-        print(list_price)
-        return sorted(list_price, key=lambda p: p.date)
-    
 
-    def get_yahoo_finance(self, symbol, range):
-        data = yf.download(symbol, start = '2000-01-01', end = datetime.now().strftime('%Y-%m-%d'), group_by='column', auto_adjust=False, progress=False)
-    
-        print(data.columns)
+    def get_yahoo_finance(self, symbol: str, source: str, format:str, range: str):
+        data = yf.download(symbol, start = '2025-10-01', end = datetime.now().strftime('%Y-%m-%d'), group_by='column', auto_adjust=False, progress=False)
+
         prices = [{
             "date": str(date.date()), #la fecha tiene que tener formatio YYYY-MM-dd
             "open": entry["Open"],
@@ -64,19 +30,30 @@ class Extractor:
             "adj_close": entry.get("Adj Close", entry["Close"]),
             "volume": entry["Volume"]
         } for date, entry in data.iterrows()]
-        # return self._standard_data(data, "yahoo_finance")
+        standardized = standard_data(prices, "yahoo_finance")
 
-        print(self._convert(self._standard_data(prices, "yahoo_finance")))
-
-        return(self._convert(self._standard_data(prices, "yahoo_finance")))
+        print("STANDARDIZED\n")
+        print(standardized)
+        print(type(standardized))
+        folder_origin = f"{source}_original".lower()
+        save_output(standardized, symbol, source, format, folder_origin)
+        
+        
+        converted = convert_to_dailyprice(standardized)
     
-    def get_marketstack_prices(self, symbol: str, limit: int = 100):
+        print("CONVERTED\n")
+        print(converted)
+        print(type(converted))
+        return converted
+
+   
+    def get_marketstack_prices(self, symbol: str, range: str, source: str, format:str):
 
         url = f"http://api.marketstack.com/v1/eod"
         params = {
             "access_key": self.marketstack_key,
             "symbols": 'AAPL',
-            "limit": limit  # número de días
+            "limit": 100  # número de días
         }
 
         response = requests.get(url, params=params)
@@ -96,22 +73,18 @@ class Extractor:
             "volume": entry["volume"]
         } for entry in data["data"]]
 
-        print(self._convert(self._standard_data(prices, "marketstack")))    
-               
-        return(self._convert(self._standard_data(prices, "marketstack")))
-     
+        standardized = standard_data(prices, "marketstack")
+        return convert_to_dailyprice(standardized)
 
-    def get_multiple_outputs(self, symbols, source, range):
 
-        print("ESTOY EN MULTIPLES OPCIONES")
-        print(symbols)
-        print(source)
+    def get_multiple_outputs(self, symbols, source, format, range):
+
         """Obtiene múltiples series de datos simultáneamente."""
         results = {}
         for symbol, source in zip(symbols, source):
             if source == "marketstack":
-                results[symbol] = self.get_marketstack_prices(symbol, range)
+                results[symbol] = self.get_marketstack_prices(symbol, source, format, range)
             elif source == "yahoo_finance":
-                results[symbol] = self.get_yahoo_finance(symbol, range)
+                results[symbol] = self.get_yahoo_finance(symbol, source, format, range)
         return results
     

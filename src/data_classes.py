@@ -16,28 +16,34 @@ class DailyPrice:
     adj_close: float
     volume: int
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict: 
         return asdict(self)
 
 
 class PriceSeries:
     def __init__(self, prices: Optional[Iterable[DailyPrice]] = None):
+        """Iniciliaza la clase con una lista de DailyPrice, ordenada por fecha"""
         self.prices: List[DailyPrice] = sorted(
             list(prices) if prices else [],
             key=lambda p: p.date
         )
 
     def append(self, p: DailyPrice) -> None:
+        """Agrega un elemento a la lista y lo ordena por fecha"""
         self.prices.append(p)
         self.prices.sort(key=lambda x: x.date)
 
     def extend(self, items: Iterable[DailyPrice]) -> None:
+        """Añade varios precios y los ordena por fecha"""
         self.prices.extend(items)
         self.prices.sort(key=lambda x: x.date)
 
     def mean_close(self) -> float:
+        """Calcula el promedio de los precios de cierre de todos los dias en la serie"""
         if not self.prices:
             return 0.0
+        mean_close =  statistics.mean(p.close for p in self.prices)
+        print(mean_close)
         return statistics.mean(p.close for p in self.prices)
 
     def mean_open(self) -> float:
