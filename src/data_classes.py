@@ -17,74 +17,32 @@ class DailyPrice:
     volume: int
 
     def to_dict(self) -> dict: 
+        print(asdict(self))
         return asdict(self)
+    
+    def average(symbols:list , data: list) -> float:
+        print(f"SIMBOLOS: {symbols}")
+        for symbol in symbols:
+            data_per_symbol = data[symbol]  # Obtener los datos para cada símbolo
+            prices= data_per_symbol[0]  #lista de DailyPrice
+       
+            total = sum(dp.adj_close for dp in prices)
+            average = total / len(prices) if prices else 0
+            print(f"El precio medio de cierre ajustado para {symbol} es: {average:.2f}")
 
+    def standard_deviation(symbols: list, data: list) -> float:
+        """ Calcula la desviación típica de los precios de cierre por cada symbol."""
+        print(f"SIMBOLOS: {symbols}")
+        deviation = {}
+        for symbol in symbols:
+            data_per_symbol = data[symbol]  # lista anidada: [[DailyPrice, ...]]
+            precios = data_per_symbol[0]    # extraer la lista real
+            adj_close = [dp.adj_close for dp in precios]
 
-class PriceSeries:
-    def __init__(self, prices: Optional[Iterable[DailyPrice]] = None):
-        """Iniciliaza la clase con una lista de DailyPrice, ordenada por fecha"""
-        self.prices: List[DailyPrice] = sorted(
-            list(prices) if prices else [],
-            key=lambda p: p.date
-        )
-
-    def append(self, p: DailyPrice) -> None:
-        """Agrega un elemento a la lista y lo ordena por fecha"""
-        self.prices.append(p)
-        self.prices.sort(key=lambda x: x.date)
-
-    def extend(self, items: Iterable[DailyPrice]) -> None:
-        """Añade varios precios y los ordena por fecha"""
-        self.prices.extend(items)
-        self.prices.sort(key=lambda x: x.date)
-
-    def mean_close(self) -> float:
-        """Calcula el promedio de los precios de cierre de todos los dias en la serie"""
-        if not self.prices:
-            return 0.0
-        mean_close =  statistics.mean(p.close for p in self.prices)
-        print(mean_close)
-        return statistics.mean(p.close for p in self.prices)
-
-    def mean_open(self) -> float:
-        if not self.prices:
-            return 0.0
-        return statistics.mean(p.open for p in self.prices)
-
-    def mean_volume(self) -> float:
-        if not self.prices:
-            return 0.0
-        return statistics.mean(p.volume for p in self.prices)
-
-    def moving_average_close(self, window: int) -> List[Optional[float]]:
-        if window <= 0:
-            raise ValueError("window must be > 0")
-        closes = [p.close for p in self.prices]
-        result: List[Optional[float]] = []
-        for i in range(len(closes)):
-            if i + 1 < window:
-                result.append(None)
+            if len(adj_close) > 1:
+                deviation[symbol] = statistics.stdev(adj_close)
             else:
-                window_slice = closes[i + 1 - window:i + 1]
-                result.append(sum(window_slice) / window)
-        return result
+                deviation[symbol] = 0.0
 
-    def filter_by_date_range(self, start: date, end: date) -> "PriceSeries":
-        filtered = [p for p in self.prices if start <= p.date <= end]
-        return PriceSeries(filtered)
+            print(f"Desviación típica del precio de cierre ajsutado para {symbol}: {deviation[symbol]:.2f}")
 
-    def returns(self) -> List[float]:
-        if len(self.prices) < 2:
-            return []
-        return [self.prices[i+1].close / self.prices[i].close - 1 for i in range(len(self.prices)-1)]
-
-    def mean_return(self) -> float:
-        r = self.returns()
-        return statistics.mean(r) if r else 0.0
-
-    def to_lists(self):
-        dates = [p.date for p in self.prices]
-        closes = [p.close for p in self.prices]
-        opens = [p.open for p in self.prices]
-        volumes = [p.volume for p in self.prices]
-        return {"dates": dates, "opens": opens, "closes": closes, "volumes": volumes}

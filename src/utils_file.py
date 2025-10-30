@@ -14,8 +14,6 @@ def _save_to_json(data: List[dict], filename: str):
         data = data.reset_index().to_dict(orient="records")
 
     with open(filename, "w", encoding="utf-8") as f:
-        print(data)
-        print(type(data))
         json.dump(data, f, indent=4, ensure_ascii=False)
         print(f"Datos guardados en {filename}")
 
@@ -42,7 +40,6 @@ def save_output(data: List[Dict[str, Any]], symbol: str, source: str, format: st
     filepath = os.path.join(folder, filename)
 
     if format == "json":
-        print("VOY A JSOM")
         _save_to_json(data, filepath)
     elif format == "csv":
         _save_to_csv(data, filepath)
