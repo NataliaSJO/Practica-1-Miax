@@ -35,10 +35,10 @@ def main():
     print(results)
 
 
-    media = extractor.DailyPrice.media(args.symbol, results)
+    average = extractor.DailyPrice.average(args.symbol, results)
 
 
-    deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
+    standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
 if __name__ == "__main__":
     main()
    

@@ -36,7 +36,7 @@ class Extractor:
                 "adj_close": entry.get("Adj Close", entry["Close"]),
                 "volume": entry["Volume"]
             } for date, entry in data.iterrows()]
-            standardized = standard_data(prices, "yahoo_finance")
+            standardized = standard_data(prices)
 
             #print("STANDARDIZED\n")
             #print(standardized)
@@ -84,7 +84,7 @@ class Extractor:
                 "volume": entry["volume"]
             } for entry in data["data"]]
 
-            standardized = standard_data(prices, "marketstack")
+            standardized = standard_data(prices)
 
             print("STANDARDIZED\n")
             print(standardized)

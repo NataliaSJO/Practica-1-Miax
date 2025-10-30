@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 from data_classes import DailyPrice
 
 
-def standard_data(data: List[Dict[str, Any]], source: str) -> List[Dict[str, Any]]:
+def standard_data(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Convierte los datos crudos en formato estandarizado."""
     return [{
         "date": entry["date"],
@@ -14,7 +14,6 @@ def standard_data(data: List[Dict[str, Any]], source: str) -> List[Dict[str, Any
         "close": float(entry["close"]),
         "adj_close": float(entry["adj_close"]),
         "volume": int(entry["volume"]),
-        "source": source
     } for entry in data]
 
 def convert_to_dailyprice(time_series: List[Dict[str, Any]]) -> List[DailyPrice]:
