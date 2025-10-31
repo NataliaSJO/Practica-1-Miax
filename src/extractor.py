@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import requests
 import yfinance as yf
@@ -21,12 +22,11 @@ class Extractor:
     def get_yahoo_finance(self, symbols: list, source: str, format:str, range: str):
         start_date = calculate_init_date_yf(range)
         all_converted = {}
-        print(f"symbols: {symbols}")
+     
         for symbol in symbols:
-            print(f"symbol: {symbol}")
+            
             data = yf.download(symbol, start = start_date, end = datetime.now().strftime('%Y-%m-%d'), group_by='column', auto_adjust=False, progress=False)
-
-
+            
             prices = [{
                 "date": str(date.date()), #la fecha tiene que tener formatio YYYY-MM-dd
                 "open": entry["Open"],
@@ -38,12 +38,8 @@ class Extractor:
             } for date, entry in data.iterrows()]
             standardized = standard_data(prices)
 
-            #print("STANDARDIZED\n")
-            #print(standardized)
-            #print(type(standardized))
             folder_origin = f"{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
-
 
             converted = convert_to_dailyprice(standardized)
 
@@ -51,8 +47,6 @@ class Extractor:
                 all_converted[symbol] = []
             all_converted[symbol].append(converted)
 
-        print("ALL CONVERTED\n")
-        print(all_converted)    
         return all_converted
 
    
@@ -63,7 +57,7 @@ class Extractor:
         url = f"http://api.marketstack.com/v1/eod"
         params = {
             "access_key": self.marketstack_key,
-            "symbols": symbols,
+            "symbols": ",".join(symbols), #convierte la lista en un string serparado por comas
             "limit":  limit # número de días
         }
 
@@ -73,7 +67,14 @@ class Extractor:
         if "data" not in data:
             print("Error o respuesta vacía:", data)
             return []
+        
+        """ Marketstack devuelve todos los datos en una sola lista, por lo que hay que agruparlos por símbolo para pode trabajar con ellos"""
+        grouped = defaultdict(list)
+        for entry in data["data"]:
+            grouped[entry["symbol"]].append(entry)
+
         for symbol in symbols:
+            entries = grouped.get(symbol, [])
             prices = [{
                 "date": entry["date"][:10],  # YYYY-MM-DD
                 "open": entry["open"],
@@ -82,13 +83,9 @@ class Extractor:
                 "close": entry["close"],
                 "adj_close": entry.get("adj_close", entry["close"]), 
                 "volume": entry["volume"]
-            } for entry in data["data"]]
+            } for entry in entries]
 
             standardized = standard_data(prices)
-
-            print("STANDARDIZED\n")
-            print(standardized)
-            print(type(standardized))
 
             folder_origin = f"{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
@@ -97,19 +94,22 @@ class Extractor:
             if symbol not in all_converted:
                 all_converted[symbol] = []
                 all_converted[symbol].append(converted)
-
-        print("ALL CONVERTED\n")
-        print(all_converted)    
+    
         return all_converted
 
 
     def get_multiple_outputs(self, symbols, source, format, range):
-
+        all_results = {}
         """Obtiene múltiples series de datos simultáneamente."""
         for source in source:
             if source == "marketstack":
                 results = self.get_marketstack_prices(symbols, source, format, range)
+                print("RESULTS MARKETSTACK\n")
+                print(results)  
+                all_results["marketstack"] = results
             elif source == "yahoo_finance":
                 results = self.get_yahoo_finance(symbols, source, format, range)
-    
-        return results
+                print("RESULTS YAHOO FINANCE\n")
+                print(results)  
+                all_results["yahoo_finance"] = results
+        return all_results

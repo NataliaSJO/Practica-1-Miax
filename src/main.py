@@ -39,6 +39,11 @@ def main():
 
 
     standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
+    
+    
+
+    weights = extractor.DailyPrice.calculate_risk_parity_weights(args.symbol, results)
+  #  monte_carlo_simulation = extractor.monte_carlo_simulation(args.symbol, results, days=252, simulations=1000)
 if __name__ == "__main__":
     main()
    
