@@ -104,12 +104,9 @@ class Extractor:
         for source in source:
             if source == "marketstack":
                 results = self.get_marketstack_prices(symbols, source, format, range)
-                print("RESULTS MARKETSTACK\n")
-                print(results)  
                 all_results["marketstack"] = results
             elif source == "yahoo_finance":
                 results = self.get_yahoo_finance(symbols, source, format, range)
-                print("RESULTS YAHOO FINANCE\n")
-                print(results)  
+  
                 all_results["yahoo_finance"] = results
         return all_results

@@ -4,9 +4,8 @@ from dotenv import load_dotenv
 import argparse
 
 import extractor
-
-
-
+import utils_date
+from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
 
 def main():
     load_dotenv() # Carga las variables de entorno desde el archivo .env
@@ -31,8 +30,8 @@ def main():
 
     
     results = my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
-    print("RESULTS")
-    print(results)
+ #   print("RESULTS")
+ #   print(results)
 
 
     average = extractor.DailyPrice.average(args.symbol, results)
@@ -43,7 +42,14 @@ def main():
     
 
     weights = extractor.DailyPrice.calculate_risk_parity_weights(args.symbol, results)
-  #  monte_carlo_simulation = extractor.monte_carlo_simulation(args.symbol, results, days=252, simulations=1000)
+
+    adjusted_prices = extractor.DailyPrice.extract_adj_close_prices(args.symbol, results)
+    
+    sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 500, simulations = 200)
+
+
+    plot_simulation(sim_cartera, args.symbol + ["Cartera"])
+
 if __name__ == "__main__":
     main()
    

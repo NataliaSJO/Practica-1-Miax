@@ -30,7 +30,9 @@ class DailyPrice:
                     price_adj_close[source][symbol] = [dp.adj_close for dp in daily_prices]
                 else:
                     price_adj_close[source][symbol] = []   
-        return price_adj_close
+        first_source = next(iter(price_adj_close)) # Se coje la primera fuente disponible para hacer los calculos
+        symbol_dict = price_adj_close[first_source]
+        return symbol_dict
 
     
     def average(symbols:list , data: list):
@@ -39,13 +41,10 @@ class DailyPrice:
 
         adj_close_prices = DailyPrice.extract_adj_close_prices(symbols, data)
 
-        first_source = next(iter(adj_close_prices)) # Se coje la primera fuente disponible para hacer los calculos
-        symbol_dict = adj_close_prices[first_source]
-
         average = {}
 
         for symbol in symbols:
-            prices = symbol_dict.get(symbol, [])
+            prices = adj_close_prices.get(symbol, [])
             calcule_average = sum(prices) / len(prices) if prices else 0
             average[symbol] = calcule_average
             print(f"El precio medio de cierre ajustado para el valor {symbol} es: {calcule_average:.2f}")
@@ -55,12 +54,9 @@ class DailyPrice:
     
         adj_close_prices = DailyPrice.extract_adj_close_prices(symbols, data)
 
-        first_source = next(iter(adj_close_prices)) # Se coje la primera fuente disponible para hacer los calculos
-        symbol_dict = adj_close_prices[first_source]
-
         deviation = {}
         for symbol in symbols:
-            prices = symbol_dict.get(symbol, [])    # extraer la lista de precios ajustados por cada símbolo
+            prices = adj_close_prices.get(symbol, [])    # extraer la lista de precios ajustados por cada símbolo
             if len(prices) > 1:
                 deviation[symbol] = statistics.stdev(prices)
             else:
@@ -71,13 +67,13 @@ class DailyPrice:
         """Calcula los pesos de risk parity a partir de precios ajustados.
             Entrada: {symbol: [adj_close, adj_close, ...]}
             Salida: {symbol: peso} """
+        
+        print("CALCULO DE RISK PARITY WEIGHTS")
         adj_close_prices = DailyPrice.extract_adj_close_prices(symbols, data)
 
-        first_source = next(iter(adj_close_prices)) # Se coje la primera fuente disponible para hacer los calculos
-        symbol_dict = adj_close_prices[first_source]
         volatilities = {}
 
-        for symbol, prices in symbol_dict.items():
+        for symbol, prices in adj_close_prices.items():
             if len(prices) < 2:
                 volatilities[symbol] = np.inf  # penaliza series muy cortas
                 continue
