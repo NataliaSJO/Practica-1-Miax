@@ -15,28 +15,36 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
     
     results = {}
     for symbol, series in prices.items():
+        print(f"Simulando {symbol} con {len(series)} precios históricos.")
         log_returns = np.log(np.array(series[1:]) / np.array(series[:-1])) # Calcula los retornos logarítmicos diarios
         mu = np.mean(log_returns) #Calcula la media de los retornos logarítmicos
         sigma = np.std(log_returns) #Calcula la desviación estándar de los retornos logarítmicos
-     
+        
+      #  print(f"LOG: {log_returns}\n, media de los retornos: {mu}\n, sigma: {sigma}\n")
+
         # Simulaciones de Monte Carlo
         simulations_matrix = np.zeros((simulations, days)) #Crea una matriz vacia para almacenar las simulaciones
+
         for i in range(simulations):
             daily_returns = np.random.normal(mu, sigma, days) #Genera retornos diarios aleatorios con distribución normal
             price_path = [series[-1]]
             for r in daily_returns:
                 price_path.append(price_path[-1] * np.exp(r)) #Simula la evolución del precio partiendo del último precio conocido
             simulations_matrix[i] = price_path[1:] #Almacena la simulación en la matriz
-
+      
         results[symbol] = simulations_matrix
+       # print(f"RESULTADO POR SIMBOLO:\n {results[symbol]}")
 
     # Si hay pesos, calcular evolución de la cartera
     if weights:
         portfolio_simulations = np.zeros((simulations, days)) #Matriz para almacenar las simulaciones de la cartera
         for symbol, sim_matrix in results.items():
             portfolio_simulations += sim_matrix * weights[symbol] #Suma ponderada de las simulaciones individuales de cada valor de la cartera
+            print(f"Simulaciones para {symbol} con peso {weights[symbol]} agregadas a la cartera.")
+            print("\n")
+            print(f"Cartera simulada: {portfolio_simulations}")
         results["Cartera"] = portfolio_simulations
-    
+
     return results
 
 def plot_simulation(sim_dict: dict, symbols: list):
@@ -44,7 +52,7 @@ def plot_simulation(sim_dict: dict, symbols: list):
         - sim_dict: dict con {symbol: np.array(simulaciones)}
         - symbols: lista de símbolos a graficar"""
     
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(12, 10))
     
     for symbol in symbols:
         sim_matrix = sim_dict.get(symbol)

@@ -45,7 +45,7 @@ class Extractor:
 
             if symbol not in all_converted:
                 all_converted[symbol] = []
-            all_converted[symbol].append(converted)
+            all_converted[symbol].extend(converted)
 
         return all_converted
 
@@ -93,7 +93,7 @@ class Extractor:
             converted = convert_to_dailyprice(standardized)
             if symbol not in all_converted:
                 all_converted[symbol] = []
-                all_converted[symbol].append(converted)
+                all_converted[symbol].extend(converted)
     
         return all_converted
 

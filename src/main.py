@@ -26,24 +26,23 @@ def main():
     my_extractor = extractor.Extractor(marketstack_key = api_key_marketstack)
 
     my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
-   # print(my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range))
 
     
     results = my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
  #   print("RESULTS")
- #   print(results)
+  #  print(results)
 
 
-    average = extractor.DailyPrice.average(args.symbol, results)
+   # average = extractor.DailyPrice.average(args.symbol, results)
 
 
-    standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
+    #standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
     
     
 
     weights = extractor.DailyPrice.calculate_risk_parity_weights(args.symbol, results)
 
-    adjusted_prices = extractor.DailyPrice.extract_adj_close_prices(args.symbol, results)
+    adjusted_prices = extractor.DailyPrice.extract_adj_close_prices(results)
     
     sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 500, simulations = 200)
 
@@ -54,9 +53,3 @@ if __name__ == "__main__":
     main()
    
 
-
-
-
-
-    #
-    #python useApi.py --symbol SAN.MC --interval 1d --range 10y

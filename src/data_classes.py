@@ -15,44 +15,48 @@ class DailyPrice:
     close: float
     adj_close: float
     volume: int
-
-    def extract_adj_close_prices(symbols: list, data: dict) -> dict:
+    
+    @staticmethod
+    def extract_adj_close_prices(data: dict) -> dict:
         """Extrae los precios de cierre ajustado desde un dict anidado por fuente y símbolo.
         Espera formato: {fuente: {symbol: [[DailyPrice, DailyPrice, ...]]}}
-        Retorna: {fuente: {symbol: [adj_close, ...]}}"""
-        price_adj_close = {}
-        for source, symbol_dict in data.items():
-            price_adj_close[source] = {}
-            for symbol in symbol_dict:
-                list_with_symbol = symbol_dict.get(symbol, [])
-                if list_with_symbol:
-                    daily_prices = list_with_symbol[0]  # acceder a la lista en funcion del symbol
-                    price_adj_close[source][symbol] = [dp.adj_close for dp in daily_prices]
-                else:
-                    price_adj_close[source][symbol] = []   
-        first_source = next(iter(price_adj_close)) # Se coje la primera fuente disponible para hacer los calculos
-        symbol_dict = price_adj_close[first_source]
-        return symbol_dict
+        Devuelve: {symbol: [adj_close, ...]}. Los datos de la primera fuente encontrada."""
+        first_source = next(iter(data))
+        symbol_dict = data[first_source]
 
-    
+
+        price_adj_close = {
+                symbol: [dp.adj_close for dp in daily_prices]
+                for symbol, daily_prices in symbol_dict.items()
+            }
+
+        return price_adj_close
+
+    @staticmethod
     def average(symbols:list , data: list):
-        """Calcula la media de precios ajustados por símbolo y fuente.
-            Retorna: {fuente: {symbol: promedio}}"""
+        """
+        Calcula la media de precios ajustados por símbolo usando la primera fuente.
+        Devuelve: {symbol: media}
+        """
+        adj_close_prices = DailyPrice.extract_adj_close_prices(data)
 
-        adj_close_prices = DailyPrice.extract_adj_close_prices(symbols, data)
 
         average = {}
 
         for symbol in symbols:
             prices = adj_close_prices.get(symbol, [])
-            calcule_average = sum(prices) / len(prices) if prices else 0
-            average[symbol] = calcule_average
-            print(f"El precio medio de cierre ajustado para el valor {symbol} es: {calcule_average:.2f}")
-
-    def standard_deviation(symbols: list, data: list) -> float:
-        """ Calcula la desviación típica de los precios de cierre por cada fuente de datos y cada simbolo."""
+            calculate_average = sum(prices) / len(prices) if prices else 0
+            average[symbol] = calculate_average
+            print(f"El precio medio de cierre ajustado para el valor {symbol} es: {calculate_average:.2f}")
+        
+        return average
     
-        adj_close_prices = DailyPrice.extract_adj_close_prices(symbols, data)
+    @staticmethod
+    def standard_deviation(symbols: list, data: list) -> float:
+        """Calcula la desviación típica por símbolo usando la primera fuente.
+        Devuelve: {symbol: desviación}"""
+
+        adj_close_prices = DailyPrice.extract_adj_close_prices(data)
 
         deviation = {}
         for symbol in symbols:
@@ -62,14 +66,16 @@ class DailyPrice:
             else:
                 deviation[symbol] = 0.0
             print(f"Desviación típica del precio de cierre ajustado para el valor {symbol} es: {deviation[symbol]:.2f}")
-
+        
+        return deviation
+    
+    @staticmethod
     def calculate_risk_parity_weights(symbols: list, data: list) -> dict:
         """Calcula los pesos de risk parity a partir de precios ajustados.
             Entrada: {symbol: [adj_close, adj_close, ...]}
             Salida: {symbol: peso} """
         
-        print("CALCULO DE RISK PARITY WEIGHTS")
-        adj_close_prices = DailyPrice.extract_adj_close_prices(symbols, data)
+        adj_close_prices = DailyPrice.extract_adj_close_prices(data)
 
         volatilities = {}
 
