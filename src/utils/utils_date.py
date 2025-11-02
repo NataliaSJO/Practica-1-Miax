@@ -1,38 +1,28 @@
 import datetime
 
-fecha_fin = datetime.datetime.now()
+from matplotlib.dates import relativedelta
 
-def calculate_init_date_yf(range:str):
-    range_text = range
-    last_char_range = range_text[-1]
-    time = int(range_text[:-1])
+end_date = datetime.datetime.now()
+
+def calculate_init_date_yf(range:str, end_date: datetime.datetime = end_date):
+    last_char_range = range[-1]
+    time = int(range[:-1])
    
     if(last_char_range == 'y'):
-        init_date = datetime.datetime(fecha_fin.year - time, fecha_fin.month, fecha_fin.day)
-        return init_date
+         return end_date - relativedelta(years=time)
+
     if(last_char_range == 'm'):
-        if time >= 12:
-            years = time // 12
-            months = time % 12
-            init_date = datetime.datetime(fecha_fin.year - years, fecha_fin.month - months, fecha_fin.day)
-            return init_date
-        else:
-            init_date = datetime.datetime(fecha_fin.year, fecha_fin.month - time, fecha_fin.day)
-            return init_date
-    if(last_char_range == 'd'):
-        if time >= 30:
-            months = time // 30
-            days = time % 30
-            init_date = datetime.datetime(fecha_fin.year, fecha_fin.month - months, fecha_fin.day - days)
-            return init_date
-        else:
-            init_date = datetime.datetime(fecha_fin.year, fecha_fin.month, fecha_fin.day - time)
-            return init_date
+        return end_date - relativedelta(months=time)
         
+    if(last_char_range == 'd'):
+        return end_date - datetime.timedelta(days=time)
+
+    raise ValueError("Invalid range format. Use 'y' for years, 'm' for months, or 'd' for days.")
+        
+
 def calculate_init_date_ms(range:str, include_leap_years: bool = True):
-    range_text = range
-    last_char_range = range_text[-1]
-    time = int(range_text[:-1])
+    last_char_range = range[-1]
+    time = int(range[:-1])
    
     if(last_char_range == 'y'):
         days_per_year = 365.25 if include_leap_years else 365

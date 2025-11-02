@@ -11,13 +11,11 @@ from utils.utils_data import clean_daily_prices, standard_data, convert_to_daily
 
 from utils.utils_file import save_output
 
-from utils.data_classes import DailyPrice
- 
+from data_classes import DailyPrice
+from report import Portfolio 
 class Extractor:
     def __init__(self, marketstack_key: str):
         self.marketstack_key = marketstack_key
-        self.data_series = []
-
 
     def get_yahoo_finance(self, symbols: list, source: str, format:str, range: str):
         start_date = calculate_init_date_yf(range)
@@ -36,9 +34,11 @@ class Extractor:
                 "adj_close": entry.get("Adj Close", entry["Close"]),
                 "volume": entry["Volume"]
             } for date, entry in data.iterrows()]
-            standardized = standard_data(prices)
 
-            folder_origin = f"{source}_original".lower()
+            print(prices)
+            standardized = standard_data(prices)
+            print(standardized)
+            folder_origin = f"output_{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
 
             converted = convert_to_dailyprice(standardized)
@@ -88,7 +88,7 @@ class Extractor:
 
             standardized = standard_data(prices)
 
-            folder_origin = f"{source}_original".lower()
+            folder_origin = f"output_{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
 
             converted = convert_to_dailyprice(standardized)

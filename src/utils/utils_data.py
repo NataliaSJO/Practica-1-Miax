@@ -1,20 +1,38 @@
 # utils_data.py
 from datetime import datetime
 from typing import List, Dict, Any
-from utils.data_classes import DailyPrice
+from src.data_classes import DailyPrice
 import math
+import pandas as pd
+
+def safe_get(series: pd.Series, cast_type, field: str, date: str):
+    if series is None or series.empty or series.iloc[0] is None:
+        raise ValueError(f"Campo '{field}' vacío o inválido en la fecha {date}")
+    return cast_type(series.iloc[0])
 
 def standard_data(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Convierte los datos crudos en formato estandarizado."""
+    """Convierte los datos obtenidos de las APIs en formato estandarizado."""
     return [{
         "date": entry["date"],
-        "open": float(entry["open"].iloc[0]),
-        "high": float(entry["high"].iloc[0]),
-        "low": float(entry["low"].iloc[0]),
-        "close": float(entry["close"].iloc[0]),
-        "adj_close": float(entry["adj_close"].iloc[0]),
-        "volume": int(entry["volume"].iloc[0]),
+        "open": safe_get(entry["open"], float, "open", entry["date"]),
+        "high": safe_get(entry["high"], float, "high", entry["date"]),
+        "low": safe_get(entry["low"], float, "low", entry["date"]),
+        "close": safe_get(entry["close"], float, "close", entry["date"]),
+        "adj_close": safe_get(entry["adj_close"], float, "adj_close", entry["date"]),
+        "volume": safe_get(entry["volume"], int, "volume", entry["date"]),
     } for entry in data]
+
+#def standard_data(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+#    """Convierte los datos obtenidos de las apis en formato estandarizado."""
+#    return [{
+#        "date": entry["date"],
+#        "open": float(entry["open"].iloc[0]), #entry["open"] es un pd.Series con un solo valor. Con iloc[0] accedemos a ese valor por su posicion.
+#        "high": float(entry["high"].iloc[0]),
+#        "low": float(entry["low"].iloc[0]),
+#        "close": float(entry["close"].iloc[0]),
+#        "adj_close": float(entry["adj_close"].iloc[0]),
+#        "volume": int(entry["volume"].iloc[0]),
+#    } for entry in data]
 
 def convert_to_dailyprice(data: List[Dict[str, Any]]) -> List[DailyPrice]:
     """Convierte los datos estandarizados en objetos DailyPrice."""

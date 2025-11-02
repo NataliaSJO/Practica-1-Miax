@@ -5,6 +5,7 @@ import argparse
 
 import extractor
 from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
+from src.report import Portfolio
 
 def main():
     load_dotenv() # Carga las variables de entorno desde el archivo .env
@@ -29,10 +30,10 @@ def main():
     
     results = my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
 
-   # average = extractor.DailyPrice.average(args.symbol, results)
+    average = extractor.DailyPrice.average(args.symbol, results)
 
 
-    #standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
+    standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
     
     
 
@@ -40,10 +41,17 @@ def main():
 
     adjusted_prices = extractor.DailyPrice.extract_adj_close_prices(results)
     
-    sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 365, simulations = 200)
+    
+    results_portfolio = [results[source][symbol] for source in results for symbol in results[source]]
+    portfolio = Portfolio(results_portfolio)
+    report_md = portfolio.report(results, include_warnings=True, markdown=True)
+    print(report_md)
+    
+   # sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 365, simulations = 200)
 
 
-    plot_simulation(sim_cartera, args.symbol + ["Cartera"])
+    #plot_simulation(sim_cartera, args.symbol + ["Cartera"])
+
 
 if __name__ == "__main__":
     main()

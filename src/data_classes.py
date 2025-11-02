@@ -17,7 +17,7 @@ class DailyPrice:
     @staticmethod
     def extract_adj_close_prices(data: dict) -> dict:
         """Extrae los precios de cierre ajustado desde un dict anidado por fuente y símbolo.
-        Espera formato: {fuente: {symbol: [[DailyPrice, DailyPrice, ...]]}}
+        Espera formato: {fuente: {symbol: [DailyPrice, DailyPrice, ...]}}
         Devuelve: {symbol: [adj_close, ...]}. Los datos de la primera fuente encontrada."""
         first_source = next(iter(data))
         symbol_dict = data[first_source]
