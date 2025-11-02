@@ -29,9 +29,6 @@ def main():
 
     
     results = my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
- #   print("RESULTS")
-  #  print(results)
-
 
    # average = extractor.DailyPrice.average(args.symbol, results)
 
@@ -44,7 +41,7 @@ def main():
 
     adjusted_prices = extractor.DailyPrice.extract_adj_close_prices(results)
     
-    sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 500, simulations = 200)
+    sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 365, simulations = 200)
 
 
     plot_simulation(sim_cartera, args.symbol + ["Cartera"])

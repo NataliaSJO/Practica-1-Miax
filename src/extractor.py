@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 
 import os
 from utils_date import calculate_init_date_yf, calculate_init_date_ms
-from utils_data import standard_data, convert_to_dailyprice
+from utils_data import clean_daily_prices, standard_data, convert_to_dailyprice
 
 from utils_file import save_output
 
@@ -42,10 +42,11 @@ class Extractor:
             save_output(standardized, symbol, source, format, folder_origin)
 
             converted = convert_to_dailyprice(standardized)
+            cleaned = clean_daily_prices(converted)
 
             if symbol not in all_converted:
                 all_converted[symbol] = []
-            all_converted[symbol].extend(converted)
+            all_converted[symbol].extend(cleaned)
 
         return all_converted
 
@@ -57,7 +58,7 @@ class Extractor:
         url = f"http://api.marketstack.com/v1/eod"
         params = {
             "access_key": self.marketstack_key,
-            "symbols": ",".join(symbols), #convierte la lista en un string serparado por comas
+            "symbols": ",".join(symbols), #Convierte la lista en un string serparado por comas
             "limit":  limit # número de días
         }
 
@@ -91,9 +92,11 @@ class Extractor:
             save_output(standardized, symbol, source, format, folder_origin)
 
             converted = convert_to_dailyprice(standardized)
+            cleaned = clean_daily_prices(converted)
+
             if symbol not in all_converted:
                 all_converted[symbol] = []
-                all_converted[symbol].extend(converted)
+                all_converted[symbol].extend(cleaned)
     
         return all_converted
 

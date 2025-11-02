@@ -40,9 +40,6 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
         portfolio_simulations = np.zeros((simulations, days)) #Matriz para almacenar las simulaciones de la cartera
         for symbol, sim_matrix in results.items():
             portfolio_simulations += sim_matrix * weights[symbol] #Suma ponderada de las simulaciones individuales de cada valor de la cartera
-            print(f"Simulaciones para {symbol} con peso {weights[symbol]} agregadas a la cartera.")
-            print("\n")
-            print(f"Cartera simulada: {portfolio_simulations}")
         results["Cartera"] = portfolio_simulations
 
     return results
@@ -52,7 +49,7 @@ def plot_simulation(sim_dict: dict, symbols: list):
         - sim_dict: dict con {symbol: np.array(simulaciones)}
         - symbols: lista de símbolos a graficar"""
     
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(10, 7))
     
     for symbol in symbols:
         sim_matrix = sim_dict.get(symbol)
@@ -68,5 +65,6 @@ def plot_simulation(sim_dict: dict, symbols: list):
     plt.ylabel("Precio promedio simulado")
     plt.legend()
     plt.grid(True)
+    
     plt.tight_layout()
     plt.show()
