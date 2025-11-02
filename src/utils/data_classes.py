@@ -1,10 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import statistics
-from dataclasses import dataclass,asdict
+from dataclasses import dataclass
 from datetime import date
-
-from typing import Iterable, List, Optional
 
 @dataclass
 class DailyPrice:

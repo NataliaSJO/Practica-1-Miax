@@ -1,8 +1,8 @@
 import pytest
 import pandas as pd
 from datetime import date
-from utils_data import standard_data, convert_to_dailyprice, clean_daily_prices
-from data_classes import DailyPrice
+from utils.utils_data import standard_data, convert_to_dailyprice, clean_daily_prices
+from utils.data_classes import DailyPrice
 
 @pytest.fixture
 def data_test():

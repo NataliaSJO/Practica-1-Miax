@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import argparse
 
 import extractor
-import utils_date
 from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
 
 def main():

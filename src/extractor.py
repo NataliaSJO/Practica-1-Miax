@@ -6,15 +6,15 @@ from datetime import datetime
 from typing import List, Dict, Any
 
 import os
-from utils_date import calculate_init_date_yf, calculate_init_date_ms
-from utils_data import clean_daily_prices, standard_data, convert_to_dailyprice
+from utils.utils_date import calculate_init_date_yf, calculate_init_date_ms
+from utils.utils_data import clean_daily_prices, standard_data, convert_to_dailyprice
 
-from utils_file import save_output
+from utils.utils_file import save_output
 
-from data_classes import DailyPrice
+from utils.data_classes import DailyPrice
  
 class Extractor:
-    def __init__(self, marketstack_key):
+    def __init__(self, marketstack_key: str):
         self.marketstack_key = marketstack_key
         self.data_series = []
 
@@ -101,7 +101,7 @@ class Extractor:
         return all_converted
 
 
-    def get_multiple_outputs(self, symbols, source, format, range):
+    def get_multiple_outputs(self, symbols:list, source:str, format:str, range:str):
         all_results = {}
         """Obtiene múltiples series de datos simultáneamente."""
         for source in source:

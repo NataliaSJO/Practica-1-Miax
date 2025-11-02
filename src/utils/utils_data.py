@@ -1,19 +1,19 @@
 # utils_data.py
 from datetime import datetime
 from typing import List, Dict, Any
-from data_classes import DailyPrice
+from utils.data_classes import DailyPrice
 import math
 
 def standard_data(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Convierte los datos crudos en formato estandarizado."""
     return [{
         "date": entry["date"],
-        "open": float(entry["open"]),
-        "high": float(entry["high"]),
-        "low": float(entry["low"]),
-        "close": float(entry["close"]),
-        "adj_close": float(entry["adj_close"]),
-        "volume": int(entry["volume"]),
+        "open": float(entry["open"].iloc[0]),
+        "high": float(entry["high"].iloc[0]),
+        "low": float(entry["low"].iloc[0]),
+        "close": float(entry["close"].iloc[0]),
+        "adj_close": float(entry["adj_close"].iloc[0]),
+        "volume": int(entry["volume"].iloc[0]),
     } for entry in data]
 
 def convert_to_dailyprice(data: List[Dict[str, Any]]) -> List[DailyPrice]:
@@ -60,6 +60,6 @@ def clean_daily_prices(data: List[DailyPrice]) -> List[DailyPrice]:
         seen_dates.add(daily_prices.date)
         cleaned.append(daily_prices)
 
-    print(f"Filtrados {len(data) - len(cleaned)} registros inválidos de {len(data)}.")
+    #print(f"Filtrados {len(data) - len(cleaned)} registros inválidos de {len(data)}.")
     return cleaned
 

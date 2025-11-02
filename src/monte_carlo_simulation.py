@@ -33,7 +33,6 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
             simulations_matrix[i] = price_path[1:] #Almacena la simulación en la matriz
       
         results[symbol] = simulations_matrix
-       # print(f"RESULTADO POR SIMBOLO:\n {results[symbol]}")
 
     # Si hay pesos, calcular evolución de la cartera
     if weights:
