@@ -5,7 +5,8 @@ import argparse
 
 import extractor
 from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
-from src.report import Portfolio
+from report import Portfolio
+from utils.utils_grafic import plot_averages, plot_standard_deviations
 
 def main():
     load_dotenv() # Carga las variables de entorno desde el archivo .env
@@ -31,10 +32,10 @@ def main():
     results = my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
 
     average = extractor.DailyPrice.average(args.symbol, results)
-
+    plot_averages(average, filename="average.png")
 
     standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
-    
+    plot_averages(standars_deviation, filename="standard_deviations.png")
     
 
     weights = extractor.DailyPrice.calculate_risk_parity_weights(args.symbol, results)
@@ -43,14 +44,14 @@ def main():
     
     
     results_portfolio = [results[source][symbol] for source in results for symbol in results[source]]
-    portfolio = Portfolio(results_portfolio)
-    report_md = portfolio.report(results, include_warnings=True, markdown=True)
-    print(report_md)
+    portfolio = Portfolio(results_portfolio, adjusted_prices, weights)
+    report_md = portfolio.report(args.symbol, results, include_warnings=True, markdown=True)
+    Portfolio.export_and_open_report(report_md, filename="portfolio_report.md")
     
-   # sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 365, simulations = 200)
+    sim_cartera = monte_carlo_simulation(adjusted_prices, weights, days = 365, simulations = 200)
 
 
-    #plot_simulation(sim_cartera, args.symbol + ["Cartera"])
+    plot_simulation(sim_cartera, args.symbol + ["Cartera"])
 
 
 if __name__ == "__main__":

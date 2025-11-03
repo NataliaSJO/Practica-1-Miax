@@ -66,4 +66,5 @@ def plot_simulation(sim_dict: dict, symbols: list):
     plt.grid(True)
     
     plt.tight_layout()
-    plt.show()
+    plt.savefig("simulation.png")
+    plt.close()

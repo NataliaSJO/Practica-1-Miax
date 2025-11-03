@@ -5,3 +5,6 @@ yahoo*
 marketstack*
 **__pycache__
 **output*
+portfolio_report.md
+*.png
+*.pyc

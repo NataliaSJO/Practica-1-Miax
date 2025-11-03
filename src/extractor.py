@@ -35,9 +35,8 @@ class Extractor:
                 "volume": entry["Volume"]
             } for date, entry in data.iterrows()]
 
-            print(prices)
             standardized = standard_data(prices)
-            print(standardized)
+
             folder_origin = f"output_{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
 
