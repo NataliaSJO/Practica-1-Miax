@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations: int ):
     """Simula la evolución de una cartera o activo usando Monte Carlo.
-    
         - prices: dict con {symbol: [close1, close2, ...]}
         - weights: dict con {symbol: peso} (solo si es cartera)
         - days: horizonte temporal en días
@@ -14,8 +13,9 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
     
     
     results = {}
+    logs = []
     for symbol, series in prices.items():
-        print(f"Simulando {symbol} con {len(series)} precios históricos.")
+        logs.append(f"Simulando {symbol} con {len(series)} precios históricos.")
         log_returns = np.log(np.array(series[1:]) / np.array(series[:-1])) # Calcula los retornos logarítmicos diarios
         mu = np.mean(log_returns) #Calcula la media de los retornos logarítmicos
         sigma = np.std(log_returns) #Calcula la desviación estándar de los retornos logarítmicos
@@ -41,12 +41,13 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
             portfolio_simulations += sim_matrix * weights[symbol] #Suma ponderada de las simulaciones individuales de cada valor de la cartera
         results["Cartera"] = portfolio_simulations
 
-    return results
+    return results, logs
 
 def plot_simulation(sim_dict: dict, symbols: list):
     """ Grafica múltiples activos simulados en una sola figura.
-        - sim_dict: dict con {symbol: np.array(simulaciones)}
-        - symbols: lista de símbolos a graficar"""
+        Como argumentos:
+            - sim_dict: dict con {symbol: np.array(simulaciones)}
+            - symbols: lista de símbolos a graficar"""
     
     plt.figure(figsize=(10, 7))
     

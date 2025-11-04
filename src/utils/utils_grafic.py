@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 
 def plot_averages(averages: dict, filename: str = "average.png"):
-    """
-    Genera un gráfico de barras con las medias por símbolo.
-    - averages: diccionario {symbol: media}
-    - filename: nombre del archivo de imagen a guardar
-    """
+    """Genera un gráfico de barras con las medias por símbolo.
+        - averages: diccionario {symbol: media}
+        - filename: nombre del archivo de imagen a guardar."""
+
     symbols = list(averages.keys())
     values = list(averages.values())
 
@@ -21,11 +20,9 @@ def plot_averages(averages: dict, filename: str = "average.png"):
 
 
 def plot_standard_deviations(deviations: dict, filename: str = "standard_deviations.png"):
-    """
-    Genera un gráfico de barras con las desviaciones estándar por símbolo.
-    - deviations: diccionario {symbol: desviación}
-    - filename: nombre del archivo de imagen a guardar
-    """
+    """Genera un gráfico de barras con las desviaciones estándar por símbolo.
+        - deviations: diccionario {symbol: desviación}
+        - filename: nombre del archivo de imagen a guardar."""
     symbols = list(deviations.keys())
     values = list(deviations.values())
 

@@ -17,7 +17,16 @@ class Extractor:
     def __init__(self, marketstack_key: str):
         self.marketstack_key = marketstack_key
 
-    def get_yahoo_finance(self, symbols: list, source: str, format:str, range: str):
+    def get_yahoo_finance(self, symbols: list, source: str, format:str, range: str)-> Dict[str, List[DailyPrice]]:
+        """Obtiene los precios historicos de Yahoo_Finance para una lista de símbolos.
+        Como argumentos:
+            - symbols: lista de símbolos a consultar
+            - source: fuente de datos
+            - format: formato de salida (json, csv)
+            - range: rango de tiempo
+        Se estandarizan, convierten y limpian los datos obtenidos.
+        Devuelve un diccionario con los símbolos como claves y listas de objetos DailyPrice como valores."""
+
         start_date = calculate_init_date_yf(range)
         all_converted = {}
      
@@ -35,7 +44,7 @@ class Extractor:
                 "volume": entry["Volume"]
             } for date, entry in data.iterrows()]
 
-            standardized = standard_data(prices)
+            standardized = standard_data(source, prices)
 
             folder_origin = f"output_{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
@@ -50,7 +59,17 @@ class Extractor:
         return all_converted
 
    
-    def get_marketstack_prices(self, symbols: list, source: str, format:str, range: str):
+    def get_marketstack_prices(self, symbols: list, source: str, format:str, range: str) -> Dict[str, List[DailyPrice]]:
+        """Obtiene los precios historicos de Marketstack para una lista de símbolos.
+        Como argumentos:
+            - symbols: lista de símbolos a consultar
+            - source: fuente de datos
+            - format: formato de salida (json, csv)
+            - range: rango de tiempo
+        Marketstack devuelve todos los datos en una sola lista, por lo que hay que agruparlos por símbolo para pode trabajar con ellos.
+        Se estandarizan, convierten y limpian los datos obtenidos.
+        Devuelve un diccionario con los símbolos como claves y listas de objetos DailyPrice como valores.
+        """
         all_converted = {}
 
         limit = calculate_init_date_ms(range, include_leap_years=True)
@@ -68,7 +87,6 @@ class Extractor:
             print("Error o respuesta vacía:", data)
             return []
         
-        """ Marketstack devuelve todos los datos en una sola lista, por lo que hay que agruparlos por símbolo para pode trabajar con ellos"""
         grouped = defaultdict(list)
         for entry in data["data"]:
             grouped[entry["symbol"]].append(entry)
@@ -85,7 +103,7 @@ class Extractor:
                 "volume": entry["volume"]
             } for entry in entries]
 
-            standardized = standard_data(prices)
+            standardized = standard_data(source, prices)
 
             folder_origin = f"output_{source}_original".lower()
             save_output(standardized, symbol, source, format, folder_origin)
@@ -100,15 +118,21 @@ class Extractor:
         return all_converted
 
 
-    def get_multiple_outputs(self, symbols:list, source:str, format:str, range:str):
+    def get_multiple_outputs(self, symbols:list, source:str, format:str, range:str)-> Dict[str, Dict[str, List[DailyPrice]]]:    
+        """Obtiene múltiples series de datos simultáneamente.
+        Como argumentos:
+            - symbols: lista de símbolos a consultar
+            - source: lista de fuentes de datos
+            - format: formato de salida (json, csv)
+            - range: rango de tiempo
+        Devuelve un diccionario con los resultados de cada fuente de datos.
+        """
         all_results = {}
-        """Obtiene múltiples series de datos simultáneamente."""
         for source in source:
             if source == "marketstack":
                 results = self.get_marketstack_prices(symbols, source, format, range)
                 all_results["marketstack"] = results
             elif source == "yahoo_finance":
                 results = self.get_yahoo_finance(symbols, source, format, range)
-  
                 all_results["yahoo_finance"] = results
         return all_results
