@@ -1,3 +1,4 @@
+from datetime import date
 import os
 from dotenv import load_dotenv
 
@@ -6,7 +7,8 @@ import argparse
 import extractor
 from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
 from report import Portfolio
-from utils.utils_grafic import plot_averages, plot_standard_deviations
+from src.data_classes import DailyPrice
+from utils.utils_grafic import UtilsGrafic
 
 def main():
     load_dotenv() # Carga las variables de entorno desde el archivo .env
@@ -20,28 +22,30 @@ def main():
     args = parser.parse_args()
    
     api_key_marketstack = os.getenv("MARKETSTACK_KEY")
+    api_key_tiingo = os.getenv("TIINGO_KEY")
  
-    my_extractor = extractor.Extractor(marketstack_key = api_key_marketstack)
+    my_extractor = extractor.Extractor(marketstack_key = api_key_marketstack, tiingo_key = api_key_tiingo)
     my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)    
     results = my_extractor.get_multiple_outputs(args.symbol, args.source, args.format, args.range)
-
-    average = extractor.DailyPrice.average(args.symbol, results)
-    plot_averages(average, filename="average.png")
-
-    standars_deviation = extractor.DailyPrice.standard_deviation(args.symbol, results)
-    plot_standard_deviations(standars_deviation, filename="standard_deviations.png")
     
+    dp = DailyPrice(date.today(), 0.0, 0.0, 0.0, 0.0, 0.0, 0)
 
-    weights = extractor.DailyPrice.calculate_risk_parity_weights(args.symbol, results)
-    adjusted_prices = extractor.DailyPrice.extract_adj_close_prices(results)
+    # Usar la instancia `dp` para llamar a los métodos de instancia (antes eran estáticos)
+    average = dp.average(args.symbol, results)
+    print(f"AVERAGE: {average}")
+    UtilsGrafic.plot_averages(average, filename="average.png")
+
+    standars_deviation = dp.standard_deviation(args.symbol, results)
+    UtilsGrafic.plot_standard_deviations(standars_deviation, filename="standard_deviations.png")
+
+    weights = dp.calculate_risk_parity_weights(args.symbol, results)
+    adjusted_prices = dp.extract_adj_close_prices(results)
     
     results_portfolio = [results[source][symbol] for source in results for symbol in results[source]]
     portfolio = Portfolio(results_portfolio, adjusted_prices, weights)
     report_md = portfolio.report(args.symbol, results, include_warnings=True, markdown=True)
     Portfolio.export_and_open_report(report_md, filename="portfolio_report.md")
     
-
-
 if __name__ == "__main__":
     main()
    

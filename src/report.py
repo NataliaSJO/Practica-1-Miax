@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from datetime import date
 from data_classes import DailyPrice
 from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
 
@@ -36,20 +37,23 @@ class Portfolio:
         lines.append("| Símbolo | Media    | Desviación típica  | Pesos riesgo-paridad |")
         lines.append("|---------|----------|--------------------|----------------------|")
 
-        for symbol in symbols:   
-            average = DailyPrice.average([symbol], data)[symbol]
-            std_dev = DailyPrice.standard_deviation([symbol], data)[symbol]
+        # crear una instancia de DailyPrice para usar los métodos de instancia
+        dp = DailyPrice(date.today(), 0.0, 0.0, 0.0, 0.0, 0.0, 0)
+
+        for symbol in symbols:
+            average = dp.average([symbol], data)[symbol]
+            std_dev = dp.standard_deviation([symbol], data)[symbol]
             weight = self.weights.get(symbol, 0.0)
             
             lines.append("| {:<7} | {:>8} | {:>18} | {:>20} |".format(symbol, f"{average:.2f}", f"{std_dev:.2f}", f"{weight:.2f}"))
 
         lines.append("## Graficas de la cartera\n")   
         lines.append("\n")
-        lines.append("En la siguiente grafica se muestra la media de los valores.\n")  
+        lines.append("En la siguiente gráfica se muestra la media de los valores.\n")  
         lines.append("![Media](average.png)")
 
         lines.append("\n\n")
-        lines.append("En la siguiente grafica se muestra la desviación típica de los valores introducidos.\n")  
+        lines.append("En la siguiente gráfica se muestra la desviación típica de los valores introducidos.\n")  
         lines.append("![Desviación típica](standard_deviations.png)")
 
   
@@ -61,9 +65,9 @@ class Portfolio:
         # Insertar imagen en el Markdown
         lines.append("\n## Simulación Monte Carlo de la Cartera")
         lines.append("\n")        
-        lines.append(log)
+        lines.append(log[0])
         lines.append("Se ha realizado una simulación a lo largo de 365 días.\n")
-        lines.append("A continuación se muestra la simulación Monte Carlo de la cartera basada en los precios ajustados y los pesos calculados.\n")
+        lines.append("A continuación, se muestra la simulación Monte Carlo de la cartera basada en los precios ajustados y los pesos calculados.\n")
      
         lines.append("![Simulación Monte Carlo](simulation.png)")
 

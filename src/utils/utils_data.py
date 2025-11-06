@@ -53,19 +53,18 @@ def standard_data(source, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "adj_close": float(entry.get("adj_close", entry["close"])),
                 "volume": int(entry["volume"]),
             })
+    if source == "tiingo":     
+        for entry in data:
+            standard_data.append({
+                "date": entry["date"],
+                "open": float(entry["open"]),
+                "high": float(entry["high"]),
+                "low": float(entry["low"]),
+                "close": float(entry["close"]),
+                "adj_close": float(entry.get("adj_close", entry["close"])),
+                "volume": int(entry["volume"]),
+            })        
         return standard_data
-
-#def standard_data(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-#    """Convierte los datos obtenidos de las apis en formato estandarizado."""
-#    return [{
-#        "date": entry["date"],
-#        "open": float(entry["open"].iloc[0]), #entry["open"] es un pd.Series con un solo valor. Con iloc[0] accedemos a ese valor por su posicion.
-#        "high": float(entry["high"].iloc[0]),
-#        "low": float(entry["low"].iloc[0]),
-#        "close": float(entry["close"].iloc[0]),
-#        "adj_close": float(entry["adj_close"].iloc[0]),
-#        "volume": int(entry["volume"].iloc[0]),
-#    } for entry in data]
 
 def convert_to_dailyprice(data: List[Dict[str, Any]]) -> List[DailyPrice]:
     """Convierte los datos estandarizados en objetos DailyPrice.
