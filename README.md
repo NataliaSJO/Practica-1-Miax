@@ -67,7 +67,7 @@ pytest
 
 ## Diagrama de clases
 
-A continuación, se muestra un diagrama con las relaciones entre clases partiendo de main.
+A continuación, se muestra un diagrama con las relaciones entre clases tomando como origen main.
 
 ```mermaid
 flowchart TD
@@ -93,7 +93,8 @@ flowchart TD
   Utils ---> UtilsGrafic
 
   Main ---> Extractor
-  Main --> UtilsGrafic
+  Main --> Utils
+  Main --> DataClasses
   Main --> MonteCarlo
   Main --> Report
 
