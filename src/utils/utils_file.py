@@ -4,11 +4,10 @@ import csv
 import pandas as pd
 from datetime import datetime
 from typing import List, Dict, Any
-from dataclasses import asdict
 
 class FileUtils:
     """Clase con métodos estáticos para guardar archivos de salida."""
-    
+
     def _save_to_json(data: List[dict], filename: str):
     
        # Si es DataFrame, convertirlo

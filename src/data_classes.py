@@ -73,7 +73,7 @@ class DailyPrice:
         Como argumentos:
             - symbols: lista de símbolos
             - data: lista de datos devueltos por el extractor. Dict[str, Dict[str, List[DailyPrice]]]
-        Devuelve {symbol: peso} """
+        Devuelve {symbol: peso}"""
         
         adj_close_prices = self.extract_adj_close_prices(data)
 

@@ -1,23 +1,18 @@
-from collections import defaultdict
-import json
 import requests
 import yfinance as yf
-import io
-from datetime import date, datetime
-from typing import List, Dict, Any
-import time
 
-import os
+from datetime import datetime
+from typing import List, Dict
+
 from utils.utils_date import DateUtils
 from utils.utils_data import clean_daily_prices, standard_data, convert_to_dailyprice
 
 from utils.utils_file import FileUtils
 
 from data_classes import DailyPrice
-from report import Portfolio 
+
 class Extractor:
-    def __init__(self, marketstack_key: str, tiingo_key: str):
-        self.marketstack_key = marketstack_key
+    def __init__(self, tiingo_key: str):
         self.tiingo_key = tiingo_key
         self.date_utils = DateUtils()
 
@@ -31,7 +26,7 @@ class Extractor:
         Se estandarizan, convierten y limpian los datos obtenidos.
         Devuelve un diccionario con los símbolos como claves y listas de objetos DailyPrice como valores."""
 
-        start_date = self.date_utils.calculate_init_date_yf(range)
+        start_date = self.date_utils.calculate_init_date(range)
         all_converted: Dict[str, List[DailyPrice]] = {}
      
         for symbol in symbols:
@@ -62,94 +57,6 @@ class Extractor:
 
         return all_converted
 
-   
-    def get_marketstack_prices(self, symbols: list, source: str, format: str, range: str) -> Dict[str, List[DailyPrice]]:
-        """Obtiene los precios historicos de Marketstack para una lista de símbolos.
-        Como argumentos:
-            - symbols: lista de símbolos a consultar
-            - source: fuente de datos
-            - format: formato de salida (json, csv)
-            - range: rango de tiempo
-        Marketstack devuelve todos los datos en una sola lista, por lo que hay que agruparlos por símbolo para pode trabajar con ellos.
-        Se estandarizan, convierten y limpian los datos obtenidos.
-        Devuelve un diccionario con los símbolos como claves y listas de objetos DailyPrice como valores.
-        """
-        all_converted = {}
-
-        start_date = self.date_utils.calculate_init_date_yf(range)
-
-       # limit = self.date_utils.calculate_init_date_ms(range, include_leap_years=True)
-        #print(limit)
-        url = f"http://api.marketstack.com/v1/eod"
-
-        all_data = []
-        offset = 0
-        limit = 100
-
-        while True:
-            params = {
-                "access_key": self.marketstack_key,
-                "symbols": ",".join(symbols), #Convierte la lista en un string serparado por comas
-                "date_from": start_date.strftime('%Y-%m-%d'),
-                "date_to": datetime.now().strftime('%Y-%m-%d'),
-                "limit":  limit, 
-                "offset": offset
-            }
-
-            response = requests.get(url, params=params)
-            # handle non-200 responses and non-JSON bodies gracefully
-            if response.status_code != 200:
-                print(f"Marketstack API returned status {response.status_code}: {response.text}")
-                return {}
-            try:
-                data = response.json()
-            except ValueError as e:
-                # JSON decoding failed (empty body or invalid JSON)
-                print("Error decoding JSON from Marketstack response:", e)
-                print("Response text:", response.text[:1000])
-                return {}
-           
-            if "data" not in data:
-                print("Error o respuesta vacía:", data)
-                return {}
-            
-            all_data.extend(data["data"])
-            offset += limit
-
-            # para la paginacion si la longitud de la pagina es menor que el limite
-            if len(data.get("data", [])) < limit:
-                break
-       
-        grouped = defaultdict(list)
-        for entry in all_data:
-            grouped[entry["symbol"]].append(entry)
-
-        for symbol in symbols:
-            entries = grouped.get(symbol, [])
-            prices = [{
-                "date": entry["date"][:10],  # YYYY-MM-DD
-                "open": entry["open"],
-                "high": entry["high"],
-                "low": entry["low"],
-                "close": entry["close"],
-                "adj_close": entry.get("adj_close", entry["close"]), 
-                "volume": entry["volume"]
-            } for entry in entries]
-
-            standardized = standard_data(source, prices)
-
-            folder_origin = f"output_{source}_original".lower()
-            FileUtils.save_output(standardized, symbol, source, format, folder_origin)
-
-            converted = convert_to_dailyprice(standardized)
-            cleaned = clean_daily_prices(converted)
-
-            if symbol not in all_converted:
-                all_converted[symbol] = []
-                all_converted[symbol].extend(cleaned)
-    
-        return all_converted
-
     def get_tiingo(self, symbols: list, source: str, format: str, range: str, resampleFreq: str = "daily") -> Dict[str, List[DailyPrice]]:
         """Obtener precios históricos desde la API de Tiingo en formato CSV.
         Como argumentos:   
@@ -161,7 +68,7 @@ class Extractor:
         Devuelve dict {symbol: [DailyPrice, ...]} similar a otros métodos del extractor."""
 
 
-        start_date = self.date_utils.calculate_init_date_yf(range)
+        start_date = self.date_utils.calculate_init_date(range)
         all_converted: Dict[str, List[DailyPrice]] = {}
 
         headers = {
@@ -197,7 +104,6 @@ class Extractor:
                 print("Response snippet:", response.text[:500])
                 continue
 
-    
             prices = []
             for entry in data:
                 date_raw = entry.get("date") or entry.get("Date")
@@ -245,13 +151,12 @@ class Extractor:
         all_results: Dict[str, Dict[str, List[DailyPrice]]] = {}
         
         for source in source:
-            if source == "marketstack":
-                results = self.get_marketstack_prices(symbols, source, format, range)
-                all_results["marketstack"] = results
-            elif source == "yahoo_finance":
+            if source == "yahoo_finance":
                 results = self.get_yahoo_finance(symbols, source, format, range)
                 all_results["yahoo_finance"] = results
             elif source == "tiingo":
                 results = self.get_tiingo(symbols, source, format, range)
                 all_results["tiingo"] = results    
+            else:
+                raise ValueError(f"La fuente: {source} no está contemplada como api.")
         return all_results

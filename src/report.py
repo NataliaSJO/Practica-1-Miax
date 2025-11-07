@@ -1,11 +1,6 @@
 import os
-import pandas as pd
-import matplotlib.pyplot as plt
 from datetime import date
 from data_classes import DailyPrice
-from monte_carlo_simulation import monte_carlo_simulation, plot_simulation
-
-
 
 class Portfolio:
     def __init__(self, data, adjusted_prices: dict, weights: dict):
@@ -35,40 +30,70 @@ class Portfolio:
       
         # Header for the table
         lines.append("| Símbolo | Media    | Desviación típica  | Pesos riesgo-paridad |")
-        lines.append("|---------|----------|--------------------|----------------------|")
+        lines.append("|---------|----------|--------------------|-------------------|")
 
         # crear una instancia de DailyPrice para usar los métodos de instancia
         dp = DailyPrice(date.today(), 0.0, 0.0, 0.0, 0.0, 0.0, 0)
 
+        # Preparar los pesos que se mostrarán en la tabla. Usar self.weights si está disponible,
+        # en caso contrario calcular un fallback por símbolo.
+        weights_used = {}
+        for symbol in symbols:
+            weight = dp.calculate_risk_parity_weights([symbol], data)[symbol]
+            weights_used[symbol] = float(weight)
+
+        total_weights = sum(weights_used.values()) if len(weights_used) > 0 else 0.0
+       
         for symbol in symbols:
             average = dp.average([symbol], data)[symbol]
             std_dev = dp.standard_deviation([symbol], data)[symbol]
-            weight = self.weights.get(symbol, 0.0)
-            
-            lines.append("| {:<7} | {:>8} | {:>18} | {:>20} |".format(symbol, f"{average:.2f}", f"{std_dev:.2f}", f"{weight:.2f}"))
+            weight = weights_used.get(symbol, 0.0)
+            pct = (weight / total_weights) * 100 if total_weights != 0 else 0.0
+
+            lines.append("| {:<7} | {:>8} | {:>18} | {:>25} |".format(symbol, f"{average:.2f}", f"{std_dev:.2f}", f"{pct:.2f}%"))
+
 
         lines.append("## Graficas de la cartera\n")   
         lines.append("\n")
         lines.append("En la siguiente gráfica se muestra la media de los valores.\n")  
-        lines.append("![Media](average.png)")
+        lines.append("![Media](plot_average.png)")
+        
 
         lines.append("\n\n")
         lines.append("En la siguiente gráfica se muestra la desviación típica de los valores introducidos.\n")  
-        lines.append("![Desviación típica](standard_deviations.png)")
+        lines.append("![Desviación típica](plot_standard_deviations.png)")
+       
 
-  
-        sim_cartera = monte_carlo_simulation(self.adjusted_prices, self.weights, days=365, simulations=200)
-        logs = sim_cartera[1]
-        log = self.logs_monte_carlo_sim(logs)
-        plot_simulation(sim_cartera[0], symbols + ["Cartera"])  
+        lines.append("\n\n")
+        lines.append("En la siguiente gráfica se muestran los pesos de los valores introducidos.\n")  
+        lines.append("![Pesos de la símbolos](plot_weights.png)")
+      
+    
 
-        # Insertar imagen en el Markdown
+        # Insertar imagen en el Markdown (la simulación se ejecuta en main y se pasa un resumen opcional)
         lines.append("\n## Simulación Monte Carlo de la Cartera")
-        lines.append("\n")        
-        lines.append(log[0])
-        lines.append("Se ha realizado una simulación a lo largo de 365 días.\n")
+        lines.append("\n La simulación se ha calcula con los siguientes parámetros: ")
+
+        # `sim_logs` puede ser pasado por el llamador (main). Si no existe, dejamos un texto genérico.
+        # El llamador puede pasar la lista de logs o un string ya formateado.
+        first_line = ""
+        # report espera que el llamador establezca self._sim_logs temporalmente si quiere que aparezca
+        sim_logs = getattr(self, "_sim_logs", None)
+        if sim_logs:
+            if isinstance(sim_logs, list):
+                formatted = self.logs_monte_carlo_sim(sim_logs)
+                first_line = formatted.splitlines()[0] if formatted else ""
+            elif isinstance(sim_logs, str):
+                first_line = sim_logs.splitlines()[0] if sim_logs else ""
+
+        if first_line:
+            lines.append(first_line)
+        else:
+            lines.append("- No hay resumen de la simulación disponible. Ejecuta la simulación desde 'main' para incluirlo.")
+
+        lines.append("- Se ha realizado una simulación a lo largo de 365 días.\n")
         lines.append("A continuación, se muestra la simulación Monte Carlo de la cartera basada en los precios ajustados y los pesos calculados.\n")
-     
+
         lines.append("![Simulación Monte Carlo](simulation.png)")
 
         return "\n".join(lines)

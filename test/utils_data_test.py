@@ -4,6 +4,8 @@ from datetime import date
 from src.utils.utils_data import standard_data, convert_to_dailyprice, clean_daily_prices
 from src.data_classes import DailyPrice
 
+SOURCE = "yahoo_finance"
+
 @pytest.fixture
 def raw_data():
     return [
@@ -26,24 +28,6 @@ def raw_data():
             "volume": pd.Series([44888200.0], name="2025-10-27")
         }
     ]
-@pytest.fixture
-def valid_daily_price():
-    return [
-        DailyPrice(date=date(2025, 1, 1), open=100.0, high=110.0, low=95.0,
-                   close=105.0, adj_close=104.5, volume=1000000),
-        DailyPrice(date=date(2023, 1, 2), open=101.0, high=111.0, low=96.0,
-                   close=106.0, adj_close=105.5, volume=900000)
-    ]
-@pytest.fixture
-def invalid_daily_price():   
-    return [
-        DailyPrice(date=date(2025, 10, 1), open=None, high=110.0, low=95.0,
-                   close=105.0, adj_close=104.5, volume=1000000),
-        DailyPrice(date=date(2025, 10, 2), open=100.0, high=110.0, low=95.0,
-                   close=0.0, adj_close=104.5, volume=1000000),
-        DailyPrice(date=date(2025, 10, 3), open=100.0, high=110.0, low=95.0,
-                   close=105.0, adj_close=float("nan"), volume=1000000)
-    ]   
 
 def standard_data_test():
     return [
@@ -68,8 +52,27 @@ def standard_data_test():
     ]
 
 
+@pytest.fixture
+def valid_daily_price():
+    return [
+        DailyPrice(date=date(2025, 1, 1), open=100.0, high=110.0, low=95.0,
+                   close=105.0, adj_close=104.5, volume=1000000),
+        DailyPrice(date=date(2023, 1, 2), open=101.0, high=111.0, low=96.0,
+                   close=106.0, adj_close=105.5, volume=900000)
+    ]
+@pytest.fixture
+def invalid_daily_price():   
+    return [
+        DailyPrice(date=date(2025, 10, 1), open=None, high=110.0, low=95.0,
+                   close=105.0, adj_close=104.5, volume=1000000),
+        DailyPrice(date=date(2025, 10, 2), open=100.0, high=110.0, low=95.0,
+                   close=0.0, adj_close=104.5, volume=1000000),
+        DailyPrice(date=date(2025, 10, 3), open=100.0, high=110.0, low=95.0,
+                   close=105.0, adj_close=float("nan"), volume=1000000)
+    ]   
+
 def test_standard_data_structure(raw_data):
-    result = standard_data(raw_data)
+    result = standard_data(SOURCE, raw_data)
     assert isinstance(result, list)
     assert all(isinstance(entry, dict) for entry in result)
     for entry in result:
@@ -78,7 +81,7 @@ def test_standard_data_structure(raw_data):
         }
 
 def test_standard_data_values(raw_data):
-    result = standard_data(raw_data)
+    result = standard_data(SOURCE, raw_data)
     assert result[0]["date"] == "2025-10-24"
     assert result[0]["open"] == 261.19
     assert result[0]["high"] == 264.13
@@ -92,7 +95,7 @@ def test_standard_data_values(raw_data):
 
 
 def test_convert_to_dailyprice(raw_data):
-    standardized = standard_data(raw_data)
+    standardized = standard_data(SOURCE, raw_data)
     daily_prices = convert_to_dailyprice(standardized)
     assert daily_prices[0].date == date(2025, 10, 24)
     assert daily_prices[1].volume == 44888200
@@ -107,6 +110,5 @@ def test_clean_daily_prices_valid(valid_daily_price):
 
 
 def test_clean_daily_prices_invalid(invalid_daily_price):
-  
-   result = clean_daily_prices(invalid_daily_price)
-   assert len(result) == 0
+    result = clean_daily_prices(invalid_daily_price)
+    assert len(result) == 0

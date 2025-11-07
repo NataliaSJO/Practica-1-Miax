@@ -11,7 +11,6 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
         - Trayectorias simuladas por símbolo
         - Trayectoria de la cartera si se usaron pesos."""
     
-    
     results = {}
     logs = []
     for symbol, series in prices.items():
@@ -67,5 +66,5 @@ def plot_simulation(sim_dict: dict, symbols: list):
     plt.grid(True)
     
     plt.tight_layout()
-    plt.savefig("simulation.png")
+    plt.savefig("plot_simulation.png")
     plt.close()

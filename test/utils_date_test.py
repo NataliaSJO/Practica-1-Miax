@@ -6,58 +6,27 @@ from src.utils.utils_date import DateUtils  # ajusta el import según tu estruct
 def end_date():
     return datetime.datetime(2025, 11, 2)
 
-# Tests for calculate_init_date_yf
-def test_calculate_years(end_date):
-    result = DateUtils.calculate_init_date_yf("2y", end_date)
-    assert result == datetime.datetime(2023, 11, 2)
+@pytest.fixture
+def date_utils(end_date):
+    dateUtils = DateUtils()
+    dateUtils.end_date = end_date
+    return dateUtils
 
-def test_calculate_months_under_12(end_date):
-    result = DateUtils.calculate_init_date_yf("5m", end_date)
-    assert result == datetime.datetime(2025, 6, 2)
+def test_calculate_years(date_utils):
+    assert date_utils.calculate_init_date("2y") == datetime.datetime(2023, 11, 2)
 
-def test_calculate_months_over_12(end_date):
-    result = DateUtils.calculate_init_date_yf("15m", end_date)
-    assert result == datetime.datetime(2024, 8, 2)
+def test_calculate_months_under_12(date_utils):
+    assert date_utils.calculate_init_date("5m") == datetime.datetime(2025, 6, 2)
 
-def test_calculate_days_under_30(end_date):
-    result = DateUtils.calculate_init_date_yf("10d", end_date)
-    assert result == datetime.datetime(2025, 10, 23)
+def test_calculate_months_over_12(date_utils):
+    assert date_utils.calculate_init_date("15m") == datetime.datetime(2024, 8, 2)
 
-def test_calculate_days_over_30(end_date):
-    result = DateUtils.calculate_init_date_yf("45d", end_date)
-    assert result == datetime.datetime(2025, 9, 18)
+def test_calculate_days_under_30(date_utils):
+    assert date_utils.calculate_init_date("10d") == datetime.datetime(2025, 10, 23)
 
-def test_invalid_range(end_date):
-   with pytest.raises(ValueError):
-       DateUtils.calculate_init_date_yf("3w", end_date)
+def test_calculate_days_over_30(date_utils):
+    assert date_utils.calculate_init_date("45d") == datetime.datetime(2025, 9, 18)
 
-# Tests for calculate_init_date_ms
-def test_years_with_leap():
-    result = DateUtils.calculate_init_date_ms("2y", include_leap_years=True)
-    # DateUtils returns integer days; 2 * 365.25 -> 730.5 -> int -> 730
-    assert result == 730
-
-def test_years_without_leap():
-    result = DateUtils.calculate_init_date_ms("2y", include_leap_years=False)
-    assert result == 730
-
-def test_months():
-    result = DateUtils.calculate_init_date_ms("3m")
-    assert result == int(3 * 30.44)  # 91.32 → 91
-
-def test_days():
-    result = DateUtils.calculate_init_date_ms("45d")
-    assert result == 45
-
-def test_large_months():
-    result = DateUtils.calculate_init_date_ms("24m")
-    assert result == int(24 * 30.44)
-
-def test_zero_days():
-    result = DateUtils.calculate_init_date_ms("0d")
-    assert result == 0
-
-def test_one_year_vs_months_equivalence():
-    days_y = DateUtils.calculate_init_date_ms("1y", include_leap_years=False)
-    days_m = DateUtils.calculate_init_date_ms("12m")
-    assert abs(days_y - days_m) <= 5  # tolerancia por redondeo
+def test_invalid_range(date_utils):
+    with pytest.raises(ValueError):
+        date_utils.calculate_init_date("3w")

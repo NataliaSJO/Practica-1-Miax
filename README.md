@@ -16,93 +16,89 @@ Proyecto de práctica que contiene utilidades para extracción y análisis de da
 - `test/` : pruebas unitarias (pytest)
 - `output_yahoo_finance_original/` : datos descargados en formato json o csv
 
-## Requisitos
+### Requisitos
 
-Recomendado crear un entorno virtual y usar Python 3.10+ (o la versión que tengas instalada). Si no existe un `requirements.txt` en el repo, instala las dependencias necesarias manualmente (p. ej. `pandas`, `numpy`, `pytest`, `matplotlib`).
+Recomendado crear un entorno virtual y usar Python 3.10.
 
-Ejemplo (PowerShell):
 
-```powershell
-# Crear y activar entorno virtual
+### Ejecutar el proyecto
+Primero hay que activar el entorno:
+
+```powershel
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+```
+El proyecto se ejecuta desde la terminal, y hay que hacerlo desde la carpeta scr:
 
-# Instalar paquetes (ajusta según tu entorno)
-pip install --upgrade pip
-pip install pandas numpy matplotlib pytest
+
+```powershel
+cd src
+```
+La configuración de las llamadas a las apis necesita los argumentos que se introducen en la consola. Se tiene que elegir:
+- source: yahoo_finance o tiingo (por defecto: yahoo_finance).
+- symbol: accion/es o indice/s que se quiere usar para formar la cartera (por defecto: IBEX).
+- interval: indica el periodo que toma la muesta (por defecto: un día).
+- range: indica el rango de tiempo desde que se quieren datos hítoricos de los símbolos, partiendo de la fecha actual ( por defecto: cinco años).
+- format: indica el formato en el que se quieren guardar los datos, son posibles json y csv (por defecto: csv).
+
+Un ejemplo de comando de ejecución:
+
+```powershel
+python main.py --source yahoo_finance --symbol AAPL, MSFT --interval 1d --range 1y --format json
 ```
 
-## Ejecutar el proyecto
+### Archivos que se generan y outoup
 
-Desde la raíz del proyecto, con el entorno activado:
+Como archivos que se generan el proyecto después de la ejecutción:
+- En una carpeta, con el formato de nombre output_{source}_original ej: `output_yahoo_finance_original/`, se guardan los datos obtenidos de la api, en el formato que se haya indicado.
+- Se generan archivos con formato .png con las gráficas de las funciones estadísticas.
+- Se genera un archivo report.py con el resumen de la cartera calculada.
 
+### Ejecutar pruebas
+
+Hay que situarse en carpeta ./test:
 ```powershell
-# Ejecutar el script principal
-python -m src.main
-
-# O ejecutar un módulo directamente
-python src\main.py
+cd test
 ```
-
-## Ejecutar pruebas
-
-Usando pytest:
-
+Para ejecutar los test: 
 ```powershell
-pytest -q
+pytest 
 ```
 
-## Estructura recomendada y datos
+## Diagrama de clases
 
-Los archivos que se generan con los datos descargados en formato json o csv se almacenan en carpetas con el formato de nombre output_{source}_original ej: `output_yahoo_finance_original/`. Dentro de estas carpetas, se crean los archivos con el nombre del ticket_sourece_date ejCuando trabajes con nuevos tickers, coloca los ficheros en esa carpeta o ajusta las rutas en `extractor.py`.
-
-## Notas sobre VS Code y Markdown
-
-Si usas Visual Studio Code te recomiendo algunas extensiones Markdown útiles:
-
-## Diagrama (FossFLOW)
-
-A continuación hay un diagrama tipo flujo (Mermaid) que representa la estructura principal del repositorio. "FossFLOW" aquí se usa como estilo de diagrama de flujo para ilustrar la arquitectura del proyecto.
+A continuación, se muestra un diagrama con las relaciones entre clases partiendo de main.
 
 ```mermaid
 flowchart TD
-  Project["Practica-1-Miax"]
-  README["README.md"]
-  src["src/"]
-  main["main.py"]
-  extractor["extractor.py"]
-  report["report.py"]
-  montecarlo["monte_carlo_simulation.py"]
-  dataclasses["data_classes.py"]
-  utils["utils/"]
-  utils_files["utils_data.py\nutils_date.py\nutils_file.py\nutils_grafic.py"]
-  tests["test/"]
-  outputs["output_yahoo_finance_original/"]
 
-  Project --> README
-  Project --> src
-  Project --> tests
-  Project --> outputs
+  Utils["utils/"]
+  DataClasses["data_classes.py"]
+  Extractor["extractor.py"]
+  Main["main.py"]
+  MonteCarlo["monte_carlo_simulation.py"]
+  Report["report.py"]
 
-  src --> main
-  src --> extractor
-  src --> report
-  src --> montecarlo
-  src --> dataclasses
-  src --> utils
+  UtilsData["utils_data.py"]
+  UtilsDate["utils_date.py"]
+  UtilsFile["utils_file.py"]
+  UtilsGrafic["utils_grafic.py"]
 
-  utils --> utils_files
+  MonteCarlo["monte_carlo_simulation.py"]
+  Report["report.py"]
 
-  tests --> |"unit tests (pytest)"| tests
-  outputs --> |"JSON/CSV sample data"| outputs
+  Utils ---> UtilsData
+  Utils ---> UtilsDate
+  Utils ---> UtilsFile
+  Utils ---> UtilsGrafic
+
+  Main ---> Extractor
+  Main --> UtilsGrafic
+  Main --> MonteCarlo
+  Main --> Report
+
+  Extractor --> DataClasses
+  Extractor --> UtilsDate
+  Extractor --> UtilsData
+  Extractor --> UtilsFile
 ```
-
-Cómo ver el diagrama:
-
-- En GitHub: GitHub renderiza bloques Mermaid directamente en el repositorio.
-- En VS Code: la vista previa de Markdown puede necesitar la extensión "Markdown Preview Mermaid Support" o usar la extensión "Markdown All in One" junto a una que soporte Mermaid. También puedes abrir el archivo en GitHub para ver el render.
-
-Instalación rápida desde PowerShell (requiere `code` en PATH):
-
-
-# Practica-1-Miax
