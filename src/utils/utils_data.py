@@ -42,17 +42,6 @@ def standard_data(source, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             })
         return standard_data
     
-    if source == "marketstack":     
-        for entry in data:
-            standard_data.append({
-                "date": entry["date"],
-                "open": float(entry["open"]),
-                "high": float(entry["high"]),
-                "low": float(entry["low"]),
-                "close": float(entry["close"]),
-                "adj_close": float(entry.get("adj_close", entry["close"])),
-                "volume": int(entry["volume"]),
-            })
     if source == "tiingo":     
         for entry in data:
             standard_data.append({
