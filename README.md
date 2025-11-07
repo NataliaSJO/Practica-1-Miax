@@ -1,25 +1,33 @@
 # Practica-1-Miax
 
-Proyecto de práctica que contiene utilidades para extracción y análisis de datos financieros, simulación Monte Carlo y generación de reportes.
+Proyecto de práctica que tiene como objetivo descargar y analizar datos financieros para simular una cartera. Los pasos que sigue el código: 
+- extracción de dos apis: yahoo_finance y tiingo
+- estandarizan y convierten a dataClass
+- análisis de datos financieros y se crean funciones y gráficas para calcular la media, la desviación típica y los pesos
+- simulación Monte Carlo y gráfica
+- generación de reporte.
 
-### Contenido principal
+Además hay una carpeta de test en la que ejcutan los test unitario.
+
+### Definición de la estructura del proyecto
 
 - `src/` : código fuente Python
-  - `main.py` : punto de entrada (script principal)
-  - `extractor.py`, `report.py`, `monte_carlo_simulation.py` : módulos funcionales
-  - `data_classes.py` : clases de datos
+  - `main.py` : punto de entrada y ejecución de funciones (script principal)
+  - `extractor.py`: código donde se hacen las llamadas a las apis y se convierten los datos a dataClass
+  - `data_classes.py` : se definen dataClass y se calculan las funciones estadisticas
+  - `monte_carlo_simulation.py` : se calcula y representa la simulación  de Monte Carlo
   - `utils/` :  
-    - utilis_data.py
-    - utils_date.py
-    - utilis_file.py
-    - utils_grafic.py
+    - utilis_data.py: contiene funciones para hacer la estandarización y conversion de datos a dataClasses 
+    - utils_date.py: contiene una función para calcular la fecha inicial con el rango de entrade
+    - utilis_file.py: contiene funciones para crear carpetas y guardar los datos en el formato de entrada
+    - utils_grafic.py: se crean las funciones para la media, la desciación típica y los pesos para cada símbolo
+- `report.py`: report en formato markdown con los resultado de la cartera    
 - `test/` : pruebas unitarias (pytest)
-- `output_yahoo_finance_original/` : datos descargados en formato json o csv
+- `output_[source]_original/` : carpeta donde se guardan los archivos con los datos de cada símbolo con el formato seleccionado, json o csv, y 
 
 ### Requisitos
 
 Recomendado crear un entorno virtual y usar Python 3.10.
-
 
 ### Ejecutar el proyecto
 Primero hay que activar el entorno:
