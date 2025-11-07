@@ -94,7 +94,7 @@ class Portfolio:
         lines.append("- Se ha realizado una simulación a lo largo de 365 días.\n")
         lines.append("A continuación, se muestra la simulación Monte Carlo de la cartera basada en los precios ajustados y los pesos calculados.\n")
 
-        lines.append("![Simulación Monte Carlo](simulation.png)")
+        lines.append("![Simulación Monte Carlo](plot_simulation.png)")
 
         return "\n".join(lines)
 
