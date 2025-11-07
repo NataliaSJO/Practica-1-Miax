@@ -116,6 +116,5 @@ def clean_daily_prices(data: List[DailyPrice]) -> List[DailyPrice]:
         seen_dates.add(daily_prices.date)  #Si pasa todas las validaciones, se añade la fecha al conjunto seen_dates
         cleaned.append(daily_prices) #Si pasa todas las validaciones, se añade a la lista cleaned
 
-    #print(f"Filtrados {len(data) - len(cleaned)} registros inválidos de {len(data)}.")
     return cleaned
 
