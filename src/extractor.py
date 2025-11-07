@@ -61,10 +61,10 @@ class Extractor:
         """Obtener precios históricos desde la API de Tiingo en formato CSV.
         Como argumentos:   
             - symbols: lista de símbolos (tickers)
-            - source: cadena usada por standard_data (ej. 'tiingo')
+            - source: cadena usada por standard_data (ej. tiingo)
             - format: 'csv' o 'json' para el archivo de salida (seguimos usando csv/json naming)
             - start_date, end_date: strings 'YYYY-MM-DD' (end_date default = hoy)
-            - resampleFreq: frecuencia de resampleo aceptada por Tiingo ('daily','monthly',...)
+            - resampleFreq: frecuencia de resampleo aceptada por Tiingo (daily)
         Devuelve dict {symbol: [DailyPrice, ...]} similar a otros métodos del extractor."""
 
 
@@ -90,20 +90,15 @@ class Extractor:
             try:
                 response = requests.get(url, params=params, headers=headers, timeout=20)
             except requests.RequestException as e:
-                print(f"Request error for {symbol} -> {e}")
+                print(f"Petición con error para el símbolo: {symbol} -> {e}")
                 continue
 
             if response.status_code != 200:
-                print(f"Tiingo returned status {response.status_code} for {symbol}: {response.text[:200]}")
+                print(f"La respuesta da el código de error {response.status_code} para {symbol}: {response.text[:200]}")
                 continue
 
-            try:
-                data = response.json()
-            except ValueError as e:
-                print(f"Error decoding JSON from Tiingo for {symbol}: {e}")
-                print("Response snippet:", response.text[:500])
-                continue
-
+            data = response.json()
+            
             prices = []
             for entry in data:
                 date_raw = entry.get("date") or entry.get("Date")

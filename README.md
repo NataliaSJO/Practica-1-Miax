@@ -52,7 +52,7 @@ La configuración de las llamadas a las apis necesita los argumentos que se intr
 Un ejemplo de comando de ejecución:
 
 ```powershel
-python main.py --source yahoo_finance --symbol AAPL, MSFT --interval 1d --range 1y --format json
+python main.py --source yahoo_finance --symbol AAPL, MSFT --range 1y --format json
 ```
 
 ### Archivos que se generan y outoup

@@ -19,8 +19,6 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
         mu = np.mean(log_returns) #Calcula la media de los retornos logarítmicos
         sigma = np.std(log_returns) #Calcula la desviación estándar de los retornos logarítmicos
         
-      #  print(f"LOG: {log_returns}\n, media de los retornos: {mu}\n, sigma: {sigma}\n")
-
         # Simulaciones de Monte Carlo
         simulations_matrix = np.zeros((simulations, days)) #Crea una matriz vacia para almacenar las simulaciones
 
@@ -33,7 +31,7 @@ def monte_carlo_simulation(prices: dict, weights: dict , days: int, simulations:
       
         results[symbol] = simulations_matrix
 
-    # Si hay pesos, calcular evolución de la cartera
+    # Calcular evolución de la cartera en función de los pesos
     if weights:
         portfolio_simulations = np.zeros((simulations, days)) #Matriz para almacenar las simulaciones de la cartera
         for symbol, sim_matrix in results.items():
